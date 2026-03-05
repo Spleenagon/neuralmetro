@@ -1,0 +1,5 @@
+pillow==9.0.0
+opencv-python==4.5.5.64
+pygetwindow==0.0.9
+pyobjc-framework-Quartz==9.0
+numpy==1.22.0
