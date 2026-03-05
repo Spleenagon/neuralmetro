@@ -1,1 +1,3 @@
 *.png
+/screenshots
+.DS_Store

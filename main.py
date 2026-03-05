@@ -31,9 +31,8 @@ def detect_shapes(image):
             shape_counts["triangle"] += 1
         elif len(approx) == 4:
             # Check if the shape is a square (aspect ratio close to 1)
-            x, y, w, h = cv2.boundingRect(approx)
             aspect_ratio = float(w) / h
-            if 0.95 <= aspect_ratio <= 1.05:
+            if 0.95 <= aspect_ratio <= 1.05 and w >= 26 and h >= 26:  # Filter out squares smaller than 26x26
                 shape_counts["square"] += 1
         elif len(approx) > 4:
             # Assume the shape is a circle if it has many vertices
@@ -107,15 +106,16 @@ def detect_shapes_and_draw(image):
         elif len(approx) == 4:
             # Check if the shape is a square (aspect ratio close to 1)
             aspect_ratio = float(w) / h
-            if 0.95 <= aspect_ratio <= 1.05:
+            if 0.95 <= aspect_ratio <= 1.05 and w >= 26 and h >= 26:  # Filter out squares smaller than 26x26
                 shape_counts["square"] += 1
                 cv2.drawContours(image, [approx], -1, (255, 0, 0), 2)  # Blue for squares
                 cv2.putText(image, f"Square ({w}x{h})", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1)
         elif len(approx) > 4:
             # Assume the shape is a circle if it has many vertices
-            shape_counts["circle"] += 1
-            cv2.drawContours(image, [approx], -1, (0, 0, 255), 2)  # Red for circles
-            cv2.putText(image, f"Circle ({w}x{h})", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
+            if w >= 26 and h >= 26:  # Filter out circles smaller than 26x26
+                shape_counts["circle"] += 1
+                cv2.drawContours(image, [approx], -1, (0, 0, 255), 2)  # Red for circles
+                cv2.putText(image, f"Circle ({w}x{h})", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
 
     return shape_counts, image
 
@@ -141,9 +141,10 @@ def capture_and_process_minimetro():
         for shape, count in shape_counts.items():
             print(f"{shape}: {count}")
 
-        # Save the processed image with shapes highlighted
-        destination_folder = "/Users/andrew/Desktop/Projects/neuralmetro"
-        screenshot_path = os.path.join(destination_folder, "processed_screenshot.png")
+        # Save the processed image with shapes highlighted and timestamp in the filename
+        destination_folder = "/Users/andrew/Desktop/Projects/neuralmetro/screenshots"
+        timestamp = time.strftime("%Y%m%d_%H%M%S")
+        screenshot_path = os.path.join(destination_folder, f"processed_screenshot_{timestamp}.png")
         cv2.imwrite(screenshot_path, processed_image)
         print(f"Screenshot copied to '{screenshot_path}'")
 
