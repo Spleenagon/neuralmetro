@@ -92,21 +92,30 @@ def detect_shapes_and_draw(image):
         epsilon = 0.04 * cv2.arcLength(contour, True)
         approx = cv2.approxPolyDP(contour, epsilon, True)
 
+        # Get the bounding rectangle for the contour
+        x, y, w, h = cv2.boundingRect(approx)
+
+        # Discard shapes with an aspect ratio greater than 2 in either direction
+        if w / h > 2 or h / w > 2:
+            continue
+
         # Determine the shape based on the number of vertices
         if len(approx) == 3:
             shape_counts["triangle"] += 1
             cv2.drawContours(image, [approx], -1, (0, 255, 0), 2)  # Green for triangles
+            cv2.putText(image, f"Triangle ({w}x{h})", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
         elif len(approx) == 4:
             # Check if the shape is a square (aspect ratio close to 1)
-            x, y, w, h = cv2.boundingRect(approx)
             aspect_ratio = float(w) / h
             if 0.95 <= aspect_ratio <= 1.05:
                 shape_counts["square"] += 1
                 cv2.drawContours(image, [approx], -1, (255, 0, 0), 2)  # Blue for squares
+                cv2.putText(image, f"Square ({w}x{h})", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 0, 0), 1)
         elif len(approx) > 4:
             # Assume the shape is a circle if it has many vertices
             shape_counts["circle"] += 1
             cv2.drawContours(image, [approx], -1, (0, 0, 255), 2)  # Red for circles
+            cv2.putText(image, f"Circle ({w}x{h})", (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 255), 1)
 
     return shape_counts, image
 
@@ -133,7 +142,7 @@ def capture_and_process_minimetro():
             print(f"{shape}: {count}")
 
         # Save the processed image with shapes highlighted
-        destination_folder = "/Users/andrew/Desktop/Projects"
+        destination_folder = "/Users/andrew/Desktop/Projects/neuralmetro"
         screenshot_path = os.path.join(destination_folder, "processed_screenshot.png")
         cv2.imwrite(screenshot_path, processed_image)
         print(f"Screenshot copied to '{screenshot_path}'")
